@@ -44,9 +44,7 @@ def find_replace(sents, regexps):
                 else:
                     continue
 
-
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Semi-automatically perform morphological parsing of Tagalog sentences")
     parser.add_argument("-p", "--parse", action="store_true",
                         help="Run parsing algorithm; assumes preprocessed "
@@ -65,3 +63,6 @@ if __name__ == "__main__":
     log.debug('SENTENCES:\n  ' + '\n  '.join(sents))
 
     find_replace(sents, None)
+
+if __name__ == "__main__":
+    main()
