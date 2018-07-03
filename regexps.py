@@ -5,19 +5,19 @@ import re
 # Morpheme-parsing regexps
 morphology = [
     # ni allomorph
-    (re.compile(r"\bni([ly][aeiou])\1"),
+    (re.compile(r"^ni([ly][aeiou])\1"),
         r"`in`-RED-\1"),
-    (re.compile(r"\bni([ly][aeiou]\w)"),
+    (re.compile(r"^ni([ly][aeiou]\w)"),
         r"`in`-\1"),
-    (re.compile(r"\bini([lyh]?[aeiou])\1"),
+    (re.compile(r"^ini([lyh]?[aeiou])\1"),
         r"i-`in`-RED-\1"),
-    (re.compile(r"\bini([lyh]?[aeiou]\w)"),
+    (re.compile(r"^ini([lyh]?[aeiou]\w)"),
         r"i-`in`-\1"),
     # Reduplication + Infixation
     (re.compile(r"(\w?)(um|in)([aeiou])\1\3"),
         r"`\2`-RED-\1\3"),
     # Infixation
-    (re.compile(r"(\b|[^aeiou \n])(um|in)([aeiou]\w)"),
+    (re.compile(r"^([^aeiou]?)(um|in)([aeiou]\w)"),
         r"`\2`-\1\3"),
     # Mag/Pag + RED
     (re.compile(r"(^|\W)([mpn]ag)(\w{2})\3"),
@@ -33,33 +33,33 @@ morphology = [
     (re.compile(r"(\W|^)([mpn]a)(ng)-([aeiou])\4"),
         r"\1\2N-RED-\4"),
     # MaN/PaN/NaN
-    (re.compile(r"(\W|^)([mpn]a)(ng?|m)([^aeiou ])"),
+    (re.compile(r"(\W|^)([mpn]a)(ng?|m)([^aeiou])"),
         r"\1\2N-\4"),
     # M-initial with RED
-    (re.compile(r"\b(ma|na|maka|naka)(\w{1,2})\2"),
+    (re.compile(r"^(ma|na|maka|naka)(\w{1,2})\2"),
         r"\1-RED-\2"),
     # Reduplication only
-    (re.compile(r"\b([^aeiou]?[aeiou])\1"),
+    (re.compile(r"^([^aeiou]?[aeiou])\1"),
         r"RED-\1"),
     # M-initial Prefixes
-    (re.compile(r"(^| )(maka|naka|nakaka|makaka|napaka|ma|na)(\w{2})"),
-        r"\1\2-\3"),
+    (re.compile(r"^(maka|naka|nakaka|makaka|napaka|ma|na)(\w{2})"),
+        r"\1-\2"),
     # Recent Perfective
-    (re.compile(r"\bka(\w{2})\1"),
+    (re.compile(r"^ka(\w{2})\1"),
         r"kaRED-\1"),
-    (re.compile(r"\bkaka(\w)"),
+    (re.compile(r"^kaka(\w)"),
         r"kaRED-\1"),
     # Linker
-    (re.compile(r"(\w{2})ng\b"),
+    (re.compile(r"(\w{2})ng$"),
         r"\1=na"),
     # Linker Update
     (re.compile(r"=na"),
         r"n=na"),
     # PV/LV suffix
-    (re.compile(r"(\w{3})(in|an)\b"),
+    (re.compile(r"(\w{3})(in|an)$"),
         r"\1-@\2"),
     # PV Update
-    (re.compile(r"(`in`|na|ma)-(\S+)\b"),
+    (re.compile(r"(`in`|na|ma)-(\S+)$"),
         r"\1-\2-(in)"),
 ]
 
