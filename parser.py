@@ -27,22 +27,51 @@ def read_file(fname):
     return sents
 
 
-
 def find_replace(sents, regexps):
     split_sents = [sent.split() for sent in sents]
     for expr, repl in res.morphology:
         log.debug('Current REGEXP: ' + repr(expr.pattern))
-        for i, sent in enumerate(split_sents):
-            # log.debug('Current Sentence: ' + sents[i])
-            for j, word in enumerate(sent):
-                match = expr.search(word)
-                if match:
-                    log.debug('Match found:\n  {!r:50}{}'.format(
-                        expr.pattern, word))
-                    log.debug('{:37}{}'.format(
-                        'Sub result', expr.sub(repl, word)))
+        try_expr(expr, repl, split_sents)
+
+
+def try_expr(expr, repl, sents):
+    skip_words = []
+    repl_words = []
+    for sent in sents:
+        print 'Current Sentence: ' + ' '.join(sent)
+        for j, word in enumerate(sent):
+            if word in skip_words:
+                continue
+            match = expr.search(word)
+            if match:
+                new_word = expr.sub(repl, word)
+                if word in repl_words:
+                    log.info('Replacing: {} --> {}'.format(word, new_word))
+                    sent[j] = new_word
                 else:
-                    continue
+                    print 'Match found: {} --> {}'.format(word, new_word)
+                    replace = confirm('Replace')
+                    remember = confirm('Remember this choice')
+                    if remember:
+                        (repl_words if replace else skip_words).append(word)
+                    if replace:
+                        sent[j] = new_word
+            else:
+                continue
+        log.debug(' '.join(sent))
+
+def confirm(msg, default=True):
+    skip = 'a'
+    while skip:
+        if skip in 'nN':
+            return False
+        elif skip in 'yY':
+            return True
+        else:
+            skip = raw_input('  {} ({})? '.format(
+                msg, 'Y/n' if default else 'y/N'))
+    else:
+        return default
 
 def main():
     parser = argparse.ArgumentParser(description="Semi-automatically perform morphological parsing of Tagalog sentences")
@@ -57,12 +86,11 @@ def main():
     args = parser.parse_args()
     fname = args.file
 
-    log = logging.getLogger(__name__)
-
     sents = read_file(fname)
     log.debug('SENTENCES:\n  ' + '\n  '.join(sents))
 
     find_replace(sents, None)
 
 if __name__ == "__main__":
+    log = logging.getLogger(__name__)
     main()
