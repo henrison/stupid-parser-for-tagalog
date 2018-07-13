@@ -7,7 +7,7 @@ import re
 import regexps as res
 import argparse
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig()
 
 def read_file(fname):
     print "Opening file:", fname
@@ -26,39 +26,52 @@ def read_file(fname):
         quit()
     return sents
 
-
-def find_replace(sents, regexps):
-    split_sents = [sent.split() for sent in sents]
-    for expr, repl in res.morphology:
-        log.debug('Current REGEXP: ' + repr(expr.pattern))
-        try_expr(expr, repl, split_sents)
-
+def write_file(fname, sents):
+    print "Writing to file:", fname
+    with open(fname, "w") as f:
+        for sent in sents:
+            f.write(' '.join(sent) + '\n')
 
 def try_expr(expr, repl, sents):
     skip_words = []
     repl_words = []
+
     for sent in sents:
-        print 'Current Sentence: ' + ' '.join(sent)
+        print 'Current Sentence:', ' '.join(sent)
         for j, word in enumerate(sent):
-            if word in skip_words:
-                continue
-            match = expr.search(word)
-            if match:
+            if word not in skip_words and expr.search(word):
+                # Match found and not skipped
                 new_word = expr.sub(repl, word)
-                if word in repl_words:
-                    log.info('Replacing: {} --> {}'.format(word, new_word))
-                    sent[j] = new_word
-                else:
+                if word not in repl_words:
+                    # This word hasn't been set to be ignored or replaced yet
                     print 'Match found: {} --> {}'.format(word, new_word)
                     replace = confirm('Replace')
                     remember = confirm('Remember this choice')
                     if remember:
                         (repl_words if replace else skip_words).append(word)
-                    if replace:
-                        sent[j] = new_word
-            else:
-                continue
-        log.debug(' '.join(sent))
+                    if not replace:
+                        continue
+                log.info('Replacing: {} --> {}'.format(word, new_word))
+                sent[j] = new_word
+        log.debug("Result: " + ' '.join(sent))
+        print
+
+def do_expr(expr, repl, sents):
+    """
+    Replacement function that doesn't ask for user confirmation. Intended for
+    debugging, to cut down on the need for user input.
+    --> I feel like there should be a way to create some common functions that can be called by either X_expr() function...
+    """
+    for sent in sents:
+        print 'Current Sentence:', ' '.join(sent)
+        for j, word in enumerate(sent):
+            if expr.search(word):
+                new_word = expr.sub(repl, word)
+                print 'Replacing: {} --> {}'.format(word, new_word)
+                sent[j] = new_word
+        log.debug("Result: " + ' '.join(sent))
+        print
+
 
 def confirm(msg, default=True):
     skip = 'a'
@@ -73,6 +86,16 @@ def confirm(msg, default=True):
     else:
         return default
 
+
+def find_replace(sents, non_interactive=False):
+    split_sents = [sent.split() for sent in sents]
+    run_expr = do_expr if non_interactive else try_expr
+    for expr, repl in res.morphology:
+        log.debug('Current REGEXP: ' + repr(expr.pattern))
+        run_expr(expr, repl, split_sents)
+    return split_sents
+
+
 def main():
     parser = argparse.ArgumentParser(description="Semi-automatically perform morphological parsing of Tagalog sentences")
     parser.add_argument("-p", "--parse", action="store_true",
@@ -81,15 +104,24 @@ def main():
     parser.add_argument("-g", "--gloss", action="store_true",
                         help="Run glossing algorithm; assumes morphologically "
                              "parsed input, or runs after parser")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Print debugging messages")
+    parser.add_argument("-n", "--non-interactive", action="store_true",
+                        help="Disable confirmation messages; all matches will "
+                        "be automatically replaced")
     parser.add_argument("file", help="File to parse")
 
     args = parser.parse_args()
-    fname = args.file
 
+    if args.verbose:
+        log.setLevel(logging.DEBUG)
+
+    fname = args.file
     sents = read_file(fname)
     log.debug('SENTENCES:\n  ' + '\n  '.join(sents))
 
-    find_replace(sents, None)
+    sents = find_replace(sents, non_interactive=args.non_interactive)
+    write_file(fname + '.parsed', sents)
 
 if __name__ == "__main__":
     log = logging.getLogger(__name__)

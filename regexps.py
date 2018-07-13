@@ -42,7 +42,9 @@ morphology = [
     (re.compile(r"^([^aeiou]?[aeiou])\1"),
         r"RED-\1"),
     # M-initial Prefixes
-    (re.compile(r"^(maka|naka|nakaka|makaka|napaka|ma|na)(\w{2})"),
+    (re.compile(r"^(maka|naka|nakaka|makaka|napaka)(\w{2})"),
+        r"\1-\2"),
+    (re.compile(r"^(ma|na)(\w{2})"),
         r"\1-\2"),
     # Recent Perfective
     (re.compile(r"^ka(\w{2})\1"),
