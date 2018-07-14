@@ -126,18 +126,20 @@ def confirm(msg, default=True, extra=None):
 
 def main():
     parser = argparse.ArgumentParser(description="Semi-automatically perform morphological parsing of Tagalog sentences")
-    parser.add_argument("-p", "--parse", action="store_true",
-                        help="Run parsing algorithm; assumes preprocessed "
-                             "sentences, runs before glossing algorithm")
-    parser.add_argument("-g", "--gloss", action="store_true",
-                        help="Run glossing algorithm; assumes morphologically "
-                             "parsed input, or runs after parser")
+    # parser.add_argument("-p", "--parse", action="store_true",
+    #                     help="Run parsing algorithm; assumes preprocessed "
+    #                          "sentences, runs before glossing algorithm")
+    # parser.add_argument("-g", "--gloss", action="store_true",
+    #                     help="Run glossing algorithm; assumes morphologically "
+    #                          "parsed input, or runs after parser")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print debugging messages")
     parser.add_argument("-n", "--non-interactive", action="store_true",
                         help="Disable confirmation messages; all matches will "
-                        "be automatically replaced")
-    parser.add_argument("file", help="File to parse")
+                        "be automatically replaced; intended for debugging")
+    parser.add_argument("file",
+                        help="File to parse; must be plain text, ideally with "
+                        "one line corresponding to one sentence")
 
     args = parser.parse_args()
 
