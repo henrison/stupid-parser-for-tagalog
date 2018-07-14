@@ -2,7 +2,7 @@
 A very basic morphological parser intended as an assistive tool for semi-automatically parsing large amounts of Tagolog sentential data
 
 # Version history
-**This script has been written only with the specific usage scenario intended by the original author in mind. This may not be intuitive/correct for you. Comments and suggestions are welcome, but I cannot promise that I will be able to address them.**
+**This script has been written only with the specific usage scenario intended by the original author in mind. You may find that using the script is not very intuitive or that the output is not correct. Comments and suggestions are welcome, but I cannot promise that I will be able to address them quickly.**
 
 ## 0.1
 - Implemented basic morphological parsing for most of the easy cases

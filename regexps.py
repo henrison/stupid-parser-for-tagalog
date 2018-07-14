@@ -6,22 +6,22 @@ import re
 morphology = [
     # ni allomorph of <in>, with/without RED, with/without i-
     (re.compile(r"^ni([ly][aeiou])\1"),
-        r"`in`-RED-\1"),
+        r"<in>-RED-\1"),
     (re.compile(r"^ni([ly][aeiou]\w)"),
-        r"`in`-\1"),
+        r"<in>-\1"),
     (re.compile(r"^ini([lyh]?[aeiou])\1"),
-        r"i-`in`-RED-\1"),
+        r"i-<in>-RED-\1"),
     (re.compile(r"^ini([lyh]?[aeiou]\w)"),
-        r"i-`in`-\1"),
+        r"i-<in>-\1"),
     # i- morpheme
     (re.compile(r"\bi"),
         r"i-"),
     # Reduplication + Infixation
     (re.compile(r"(\w?)(um|in)([aeiou])\1\3"),
-        r"`\2`-RED-\1\3"),
+        r"<\2>-RED-\1\3"),
     # Infixation
     (re.compile(r"\b([^aeiou]?)(um|in)([aeiou]\w)"),
-        r"`\2`-\1\3"),
+        r"<\2>-\1\3"),
     # Mag/Pag + RED
     (re.compile(r"\b([mpn]ag)(\w{2})\2"),
         r"\1-RED-\2"),
@@ -64,7 +64,7 @@ morphology = [
     (re.compile(r"(\w{3})(in|an)$"),
         r"\1-@\2"),
     # PV Update
-    (re.compile(r"(`in`|na|ma)-([\w-]+)"),
+    (re.compile(r"(<in>|na|ma)-([\w-]+)"),
         r"\1-\2-(in)"),
 ]
 
@@ -78,8 +78,8 @@ $1Lk$2
 # PV Forms
 na-([^(\s]+)-\(in\)
 Nvol.Inch-$1-Pv
-`in`-([^(\s]+)-\(in\)
-`Inch`-$1-Pv
+<in>-([^(\s]+)-\(in\)
+<Inch>-$1-Pv
 
 \bako(=|\s)
 1sg.Nom$1
