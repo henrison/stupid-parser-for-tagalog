@@ -4,7 +4,7 @@ Regular expressions go here
 import re
 # Morpheme-parsing regexps
 morphology = [
-    # ni allomorph
+    # ni allomorph of <in>, with/without RED, with/without i-
     (re.compile(r"^ni([ly][aeiou])\1"),
         r"`in`-RED-\1"),
     (re.compile(r"^ni([ly][aeiou]\w)"),
@@ -13,33 +13,36 @@ morphology = [
         r"i-`in`-RED-\1"),
     (re.compile(r"^ini([lyh]?[aeiou]\w)"),
         r"i-`in`-\1"),
+    # i- morpheme
+    (re.compile(r"\bi"),
+        r"i-"),
     # Reduplication + Infixation
     (re.compile(r"(\w?)(um|in)([aeiou])\1\3"),
         r"`\2`-RED-\1\3"),
     # Infixation
-    (re.compile(r"^([^aeiou]?)(um|in)([aeiou]\w)"),
+    (re.compile(r"\b([^aeiou]?)(um|in)([aeiou]\w)"),
         r"`\2`-\1\3"),
     # Mag/Pag + RED
-    (re.compile(r"(^|\W)([mpn]ag)(\w{2})\3"),
-        r"\1\2-RED-\3"),
-    (re.compile(r"(^|\W)([mpn]ag)-([aeiou])\3"),
-        r"\1\2-RED-\3"),
+    (re.compile(r"\b([mpn]ag)(\w{2})\2"),
+        r"\1-RED-\2"),
+    (re.compile(r"\b([mpn]ag)-([aeiou])\2"),
+        r"\1-RED-\2"),
     # Mag/Pag (Vowel-initial stems don't need changing)
-    (re.compile(r"(\W|^)([mpn]ag)([^aeiou-])"),
-        r"\1\2-\3"),
+    (re.compile(r"\b([mpn]ag)([^aeiou-])"),
+        r"\1-\2"),
     # MaN/PaN/NaN + RED
-    (re.compile(r"(\W|^)([mpn]a)(ng?|m)(\w{2})\4"),
-        r"\1\2N-RED-\4"),
-    (re.compile(r"(\W|^)([mpn]a)(ng)-([aeiou])\4"),
-        r"\1\2N-RED-\4"),
+    (re.compile(r"\b([mpn]a)(ng?|m)(\w{2})\3"),
+        r"\1N-RED-\3"),
+    (re.compile(r"\b([mpn]a)(ng)-([aeiou])\3"),
+        r"\1N-RED-\3"),
     # MaN/PaN/NaN
-    (re.compile(r"(\W|^)([mpn]a)(ng?|m)([^aeiou])"),
-        r"\1\2N-\4"),
+    (re.compile(r"\b([mpn]a)(ng?|m)([^aeiou])"),
+        r"\1N-\3"),
     # M-initial with RED
     (re.compile(r"^(ma|na|maka|naka)(\w{1,2})\2"),
         r"\1-RED-\2"),
     # Reduplication only
-    (re.compile(r"^([^aeiou]?[aeiou])\1"),
+    (re.compile(r"\b([^aeiou]?[aeiou])\1"),
         r"RED-\1"),
     # M-initial Prefixes
     (re.compile(r"^(maka|naka|nakaka|makaka|napaka)(\w{2})"),
@@ -47,8 +50,8 @@ morphology = [
     (re.compile(r"^(ma|na)(\w{2})"),
         r"\1-\2"),
     # Recent Perfective
-    (re.compile(r"^ka(\w{2})\1"),
-        r"kaRED-\1"),
+    (re.compile(r"^ka(\w{2})\1(\w)"),
+        r"kaRED-\1\2"),
     (re.compile(r"^kaka(\w)"),
         r"kaRED-\1"),
     # Linker
@@ -61,9 +64,11 @@ morphology = [
     (re.compile(r"(\w{3})(in|an)$"),
         r"\1-@\2"),
     # PV Update
-    (re.compile(r"(`in`|na|ma)-(\S+)$"),
+    (re.compile(r"(`in`|na|ma)-([\w-]+)"),
         r"\1-\2-(in)"),
 ]
+
+suffix = (re.compile(r'([^-]+)-@([ai]n)'), r"{}-\2")
 
 # Glosses (IN PROGRESS)
 """

@@ -32,21 +32,33 @@ def write_file(fname, sents):
         for sent in sents:
             f.write(' '.join(sent) + '\n')
 
-def try_expr(expr, repl, sents):
+
+def parse_morphology(sents, non_interactive=False):
+    split_sents = [sent.split() for sent in sents]
+    try:
+        for expr, repl in res.morphology:
+            log.debug('Current REGEXP: {!r} --> {!r}'.format(expr.pattern, repl))
+            try_expr(expr, repl, split_sents, non_interactive=non_interactive)
+        handle_suffixes(split_sents, non_interactive=non_interactive)
+    except KeyboardInterrupt:
+        if not confirm("\n\nKeyboardInterrupt caught. Output intermediate "
+                       "results to a file (y/N)?", default=False):
+            exit()
+    return split_sents
+
+
+def try_expr(expr, repl, sents, non_interactive=False):
     skip_words = []
     repl_words = []
-
     for sent in sents:
-        print 'Current Sentence:', ' '.join(sent)
+        sent_msg = '\nCurrent Sentence: {}\n'.format(' '.join(sent))
         for j, word in enumerate(sent):
             if word not in skip_words and expr.search(word):
-                # Match found and not skipped
                 new_word = expr.sub(repl, word)
-                if word not in repl_words:
+                if not (non_interactive or word in repl_words):
                     # This word hasn't been set to be ignored or replaced yet
-                    print 'Match found: {} --> {}'.format(word, new_word)
-                    replace = confirm('Replace')
-                    remember = confirm('Remember this choice')
+                    replace, remember = replace_loop(sent_msg, word, new_word)
+                    sent_msg = ''
                     if remember:
                         (repl_words if replace else skip_words).append(word)
                     if not replace:
@@ -54,46 +66,62 @@ def try_expr(expr, repl, sents):
                 log.info('Replacing: {} --> {}'.format(word, new_word))
                 sent[j] = new_word
         log.debug("Result: " + ' '.join(sent))
-        print
 
-def do_expr(expr, repl, sents):
-    """
-    Replacement function that doesn't ask for user confirmation. Intended for
-    debugging, to cut down on the need for user input.
-    --> I feel like there should be a way to create some common functions that can be called by either X_expr() function...
-    """
-    for sent in sents:
-        print 'Current Sentence:', ' '.join(sent)
+
+def replace_loop(curr_sent_msg, word, new_word):
+    print '{}Match found: {} --> {}'.format(curr_sent_msg, word, new_word)
+    replace = confirm("Replace (Y/n)?")
+    remember = confirm("Remember this choice (Y/n)? [U]ndo?", extra='u')
+    while remember is None:
+        replace = not replace
+        print "Replacement changed to: {}".format("YES" if replace else "NO")
+        remember = confirm("Remember this choice (Y/n)? [U]ndo?", extra='u')
+    return replace, remember
+
+
+def handle_suffixes(split_sents, non_interactive=False):
+    words = {}
+    for sent in split_sents:
         for j, word in enumerate(sent):
-            if expr.search(word):
-                new_word = expr.sub(repl, word)
-                print 'Replacing: {} --> {}'.format(word, new_word)
-                sent[j] = new_word
-        log.debug("Result: " + ' '.join(sent))
-        print
+            if '@' in word:
+                if word in words:
+                    pass
+                elif non_interactive:
+                    words[word] = word.replace('@', '')
+                else:
+                    modify, new_word = modify_loop(word)
+                    words[word] = new_word if modify else word.replace('@','')
+                sent[j] = words[word]
 
 
-def confirm(msg, default=True):
-    skip = 'a'
-    while skip:
-        if skip in 'nN':
+def modify_loop(word):
+    print "\nFound word with suffix:", word
+    while True:
+        modify = confirm("Modify root (y/N)?", default=False)
+        if modify:
+            break
+        if confirm("Are you sure (Y/n)?"):
+            return modify, None
+    while True:
+        repl = res.suffix[1].format(raw_input("Enter new root: ").lower())
+        new_word = res.suffix[0].sub(repl, word)
+        if confirm("Confirm change: {} --> {} (Y/n)? ".format(word, new_word)):
+            return modify, new_word
+
+
+def confirm(msg, default=True, extra=None):
+    response = 'no response'
+    while response:
+        if response in 'nN':
             return False
-        elif skip in 'yY':
+        elif response in 'yY':
             return True
+        elif extra and response.lower() in extra:
+            return None
         else:
-            skip = raw_input('  {} ({})? '.format(
-                msg, 'Y/n' if default else 'y/N'))
+            response = raw_input(msg + ' ')
     else:
         return default
-
-
-def find_replace(sents, non_interactive=False):
-    split_sents = [sent.split() for sent in sents]
-    run_expr = do_expr if non_interactive else try_expr
-    for expr, repl in res.morphology:
-        log.debug('Current REGEXP: ' + repr(expr.pattern))
-        run_expr(expr, repl, split_sents)
-    return split_sents
 
 
 def main():
@@ -120,7 +148,7 @@ def main():
     sents = read_file(fname)
     log.debug('SENTENCES:\n  ' + '\n  '.join(sents))
 
-    sents = find_replace(sents, non_interactive=args.non_interactive)
+    sents = parse_morphology(sents, non_interactive=args.non_interactive)
     write_file(fname + '.parsed', sents)
 
 if __name__ == "__main__":
