@@ -13,15 +13,12 @@ morphology = [
         r"i-<in>-RED-\1"),
     (re.compile(r"^ini([lyh]?[aeiou]\w)"),
         r"i-<in>-\1"),
-    # i- morpheme
-    (re.compile(r"\bi"),
-        r"i-"),
     # Reduplication + Infixation
     (re.compile(r"(\w?)(um|in)([aeiou])\1\3"),
         r"<\2>-RED-\1\3"),
     # Infixation
-    (re.compile(r"\b([^aeiou]?)(um|in)([aeiou]\w)"),
-        r"<\2>-\1\3"),
+    (re.compile(r"(\b|i)([^aeiou]?)(um|in)([aeiou]\w)"),
+        r"\1<\3>-\2\4"),
     # Mag/Pag + RED
     (re.compile(r"\b([mpn]ag)(\w{2})\2"),
         r"\1-RED-\2"),
@@ -49,6 +46,12 @@ morphology = [
         r"\1-\2"),
     (re.compile(r"^(ma|na)(\w{2})"),
         r"\1-\2"),
+    # i- morpheme
+    (re.compile(r"(^|-)i"),
+        r"\1i-"),
+    # ka- comitative
+    (re.compile(r"^ka(\w{3})"),
+        r"ka-\1"),
     # Recent Perfective
     (re.compile(r"^ka(\w{2})\1(\w)"),
         r"kaRED-\1\2"),
