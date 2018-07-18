@@ -74,58 +74,76 @@ morphology = [
 suffix = (re.compile(r'([^-]+)-@([ai]n)'), r"{}-\2")
 
 # Glosses (IN PROGRESS)
-"""
-( |=)na( )
-$1Lk$2
+_standalone_re = r"^{}$"
+_with_linker_re = r"^{}\b"
+_prefix_re = r"\b{}"
+_suffix_re = r"{}\b"
 
-# PV Forms
-na-([^(\s]+)-\(in\)
-Nvol.Inch-$1-Pv
-<in>-([^(\s]+)-\(in\)
-<Inch>-$1-Pv
+_glosses = [
+    (re.compile(r"\bna$"), None, r"Lk"),
+    (r"na", _standalone_re, r"already"),
+    (r"pa", _standalone_re, r"still"),
+    # Pronouns
+    (r"ako", _with_linker_re, r"1sg.Nom"),
+    (r"(ka|ikaw)", _with_linker_re, r"2sg.Nom"),
+    (r"siya", _with_linker_re, r"3sg.Nom"),
+    (r"kami", _with_linker_re, r"1pl.Excl.Nom"),
+    (r"tayo", _with_linker_re, r"1pl.Incl.Nom"),
+    (r"kayo", _with_linker_re, r"2pl.Nom"),
+    (r"sila", _with_linker_re, r"3pl.Nom"),
+    (r"ko", _with_linker_re, r"1sg.Gen"),
+    (r"mo", _with_linker_re, r"2sg.Gen"),
+    (r"niya", _with_linker_re, r"3sg.Gen"),
+    (r"namin", _with_linker_re, r"1pl.Excl.Gen"),
+    (r"natin", _with_linker_re, r"1pl.Incl.Gen"),
+    (r"nin?yo", _with_linker_re, r"2pl.Gen"),
+    (r"nila", _with_linker_re, r"3pl.Gen"),
+    (r"akin", _with_linker_re, r"1sg.Obl"),
+    (r"i?yo", _with_linker_re, r"2sg.Obl"),
+    (r"kani?ya", _with_linker_re, r"3sg.Obl"),
+    (r"amin", _with_linker_re, r"1pl.Excl.Obl"),
+    (r"atin", _with_linker_re, r"1pl.Incl.Obl"),
+    (r"inyo", _with_linker_re, r"2pl.Obl"),
+    (r"kanila", _with_linker_re, r"3pl.Obl"),
+    # Demonstratives
+    (r"ito", _with_linker_re, r"Prox"),
+    (r"i?yan", _with_linker_re, r"Med"),
+    (r"i?y[ou]n", _with_linker_re, r"Dist"),
+    (r"nito", _with_linker_re, r"Gen.Prox"),
+    (r"ni?yan", _with_linker_re, r"Gen.Med"),
+    (r"n(iyo|oo|u)n", _with_linker_re, r"Gen.Dist"),
+    (r"dito", _with_linker_re, r"Obl.Prox"),
+    (r"di?yan", _with_linker_re, r"Obl.Med"),
+    (r"d(oo|u)n", _with_linker_re, r"Obl.Dist"),
+    (r"ang", _standalone_re, r"Nom"),
+    (r"ng", _standalone_re, r"Gen"),
+    (r"sa", _standalone_re, r"Obl"),
+    (r"si", _standalone_re, r"Nom.Pr"),
+    (r"ni", _standalone_re, r"Gen.Pr"),
+    (r"kay", _standalone_re, r"Obl.Pr"),
+    (r"sina", _standalone_re, r"Nom.Pr.Pl"),
+    (r"nina", _standalone_re, r"Gen.Pr.Pl"),
+    (r"ki[nl]a", _standalone_re, r"Obl.Pr.Pl"),
+    (r"mga", _standalone_re, r"Pl"),
+    (r"kung", _standalone_re, r"if"),
+    # PV Forms
+    (re.compile(r"na-([^(\s]+)-\(in\)"), None, r"Nvol.Inch-\1-Pv"),
+    (re.compile(r"ma-([^(\s]+)-\(in\)"), None, r"Nvol-\1-Pv"),
+    (re.compile(r"<in>-([^(\s]+)-\(in\)"), None, r"<Inch>-\1-Pv"),
+    # Other Voices
+    (r"i-", _prefix_re, r"Cv-"),
+    (r"ma[gN]-", _prefix_re, r"Av-"),
+    (r"na[gN]-", _prefix_re, r"Av.Inch-"),
+    (re.compile(r"<in>-"), None, r"<Inch>-"),
+    (re.compile(r"<um>-"), None, r"<Av.Inch>-"),
+    (r"RED-", _prefix_re, r"Ncompl-"),
+    (r"-an", _suffix_re, r"-Lv"),
+]
 
-\bako(=|\s)
-1sg.Nom$1
-\b(ka|ikaw)(=|\s)
-2sg.Nom$1
-\bsiya(=|\s)
-3sg.Nom$1
-\bkami(=|\s)
-1pl.Excl.Nom$1
-\btayo(=|\s)
-1pl.Incl.Nom$1
-\bkayo(=|\s)
-2pl.Nom$1
-\bsila(=|\s)
-3pl.Nom$1
-
-\bko(=|\s)
-1sg.Gen$1
-\bmo(=|\s)
-2sg.Gen$1
-\bniya(=|\s)
-3sg.Gen$1
-\bnamin(=|\s)
-1pl.Excl.Gen$1
-\bnatin(=|\s)
-1pl.Incl.Gen$1
-\bnin?yo(=|\s)
-2pl.Gen$1
-\bnila(=|\s)
-3pl.Gen$1
-
-\bakin(=|\s)
-1sg.Obl$1
-\bi?yo(=|\s)
-2sg.Obl$1
-\bkani?ya(=|\s)
-3sg.Obl$1
-\bamin(=|\s)
-1pl.Excl.Obl$1
-\batin(=|\s)
-1pl.Incl.Obl$1
-\binyo(=|\s)
-2pl.Obl$1
-\bkanila(=|\s)
-3pl.Obl$1
-"""
+glosses = []
+for expr, template, repl in _glosses:
+    try:
+        regexp = re.compile(template.format(expr))
+    except AttributeError:
+        regexp = expr
+    glosses.append((regexp, repl))

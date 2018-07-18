@@ -40,6 +40,10 @@ def write_file(fname, sents, infix_paren):
 
 def parse_morphology(sents, interactive=True):
     for expr, repl in res.morphology:
+def parse_gloss(sents, interactive=True):
+    try_exprs(res.glosses, sents, interactive=interactive)
+
+
         log.debug('Current REGEXP: {!r} --> {!r}'.format(expr.pattern, repl))
         try_expr(expr, repl, sents, interactive=interactive)
     try_suffixes(sents, interactive=interactive)
@@ -137,12 +141,12 @@ def can_interrupt(f, sents, fname, infix, interactive=True):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Semi-automatically perform morphological parsing of Tagalog sentences")
-    # parser.add_argument("-p", "--parse", action="store_true",
-    #                     help="Run parsing algorithm; assumes preprocessed "
-    #                          "sentences, runs before glossing algorithm")
-    # parser.add_argument("-g", "--gloss", action="store_true",
-    #                     help="Run glossing algorithm; assumes morphologically "
-    #                          "parsed input, or runs after parser")
+    parser.add_argument("-p", "--only-parse", action="store_true",
+                        help="Only run parsing algorithm; assumes preprocessed "
+                             "sentences")
+    parser.add_argument("-g", "--only-gloss", action="store_true",
+                        help="Only run glossing algorithm; assumes "
+                             "morphologically parsed input")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print debugging messages")
     parser.add_argument("-n", "--non-interactive", action="store_false",
@@ -165,8 +169,12 @@ def main():
     log.debug('SENTENCES:\n  ' + '\n  '.join(sents))
     sents = [sent.split() for sent in sents]
 
-    can_interrupt(parse_morphology, sents, fname + '.parsed',
-        args.infix, interactive=args.non_interactive)
+    if not args.only_gloss:
+        can_interrupt(parse_morphology, sents, fname + '.parsed',
+            args.infix, interactive=args.non_interactive)
+    if not args.only_parse:
+        can_interrupt(parse_gloss, sents, fname + '.glossed',
+            args.infix, interactive=args.non_interactive)
 
 
 if __name__ == "__main__":
