@@ -70,7 +70,7 @@ morphology = [
         r"\1-\2-(in)\3"),
 ]
 
-suffix = (re.compile(r'([^-]+)-@([ai]n)'), r"{}-\2")
+suffix = re.compile(r'([^-]+)-@')
 
 # Glosses (IN PROGRESS)
 """

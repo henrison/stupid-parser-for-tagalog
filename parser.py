@@ -70,19 +70,19 @@ def try_expr(expr, repl, sents, interactive=True):
         log.debug("Result: " + ' '.join(sent))
 
 
-def try_suffixes(split_sents, interactive=True):
-    words = {}
-    for sent in split_sents:
+def try_suffixes(sents, interactive=True):
+    new = {}
+    for sent in sents:
         for j, word in enumerate(sent):
-            if '@' in word:
-                if word in words:
-                    pass # Do nothing, just let the replacement happen
-                elif not interactive:
-                    words[word] = word.replace('@', '')
-                else:
-                    modify, new_word = conf_modify(word)
-                    words[word] = new_word if modify else word.replace('@','')
-                sent[j] = words[word]
+            match = res.suffix.search(word)
+            if match:
+                root = match.group(1)
+                try:
+                    sent[j] = word.replace(root + '-@', new[root] + '-')
+                except KeyError:
+                    new[root] = conf_modify_root(
+                        word, root, interactive=interactive)
+                    sent[j] = word.replace(root + '-@', new[root] + '-')
 
 
 def conf_replace(curr_sent_msg, word, new_word, interactive=True):
@@ -98,20 +98,20 @@ def conf_replace(curr_sent_msg, word, new_word, interactive=True):
     return replace, remember
 
 
-def conf_modify(word):
+def conf_modify_root(word, root, interactive=True):
+    if not interactive:
+        return root
+
     print "\nFound word with suffix:", word
     while True:
-        modify = yes_no("Modify root (y/N)?", default=False)
-        if modify:
-            break
-        if yes_no("Are you sure (Y/n)?"):
-            return modify, None
-    while True:
-        repl = res.suffix[1].format(raw_input("Enter new root: ").lower())
-        new_word = res.suffix[0].sub(repl, word)
-        if repl and yes_no(
-                "Confirm change: {} --> {} (Y/n)? ".format(word, new_word)):
-            return modify, new_word
+        new_root = raw_input("Enter replacement for all instances of " + root +
+                             ", or enter nothing to keep as is:").lower()
+        if not new_root:
+            new_root = root
+        new_word = word.replace(root + '-@', new_root + '-')
+        if yes_no_loop(
+                "Confirm change: {} --> {} (Y/n)?".format(word, new_word)):
+            return new_root
 
 
 def yes_no_loop(msg, default=True, extra=None):
