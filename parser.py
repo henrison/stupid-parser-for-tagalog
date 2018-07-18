@@ -28,21 +28,25 @@ def read_file(fname):
 
 
 def write_file(fname, sents, infix_paren):
+    re_infix = re.compile(r"[<>]")
     print "Writing to file:", fname
     with open(fname, "w") as f:
         for sent in sents:
             joined = ' '.join(sent)
             if infix_paren:
-                joined = (
-                    joined.replace('<', infix_paren).replace('>', infix_paren))
+                joined = re_infix.sub(infix_paren, joined)
             f.write(joined + '\n')
 
 
 def parse_morphology(sents, interactive=True):
-    for expr, repl in res.morphology:
+    try_exprs(res.morphology, sents, interactive=interactive)
+    try_suffixes(sents, interactive=interactive)
+
+
+def try_exprs(exprs, sents, interactive=True):
+    for expr, repl in exprs:
         log.debug('Current REGEXP: {!r} --> {!r}'.format(expr.pattern, repl))
         try_expr(expr, repl, sents, interactive=interactive)
-    try_suffixes(sents, interactive=interactive)
 
 
 def try_expr(expr, repl, sents, interactive=True):
@@ -66,17 +70,6 @@ def try_expr(expr, repl, sents, interactive=True):
         log.debug("Result: " + ' '.join(sent))
 
 
-def conf_replace(curr_sent_msg, word, new_word):
-    print '{}Match found: {} --> {}'.format(curr_sent_msg, word, new_word)
-    replace = yes_no("Replace (Y/n)?")
-    remember = yes_no("Remember this choice (Y/n)? [U]ndo?", extra='u')
-    while remember is None:
-        replace = not replace
-        print "Replacement changed to: {}".format("YES" if replace else "NO")
-        remember = yes_no("Remember this choice (Y/n)? [U]ndo?", extra='u')
-    return replace, remember
-
-
 def try_suffixes(split_sents, interactive=True):
     words = {}
     for sent in split_sents:
@@ -92,7 +85,17 @@ def try_suffixes(split_sents, interactive=True):
                 sent[j] = words[word]
 
 
-def modify_loop(word):
+def conf_replace(curr_sent_msg, word, new_word):
+    print '{}Match found: {} --> {}'.format(curr_sent_msg, word, new_word)
+    replace = yes_no("Replace (Y/n)?")
+    remember = yes_no("Remember this choice (Y/n)? [U]ndo?", extra='u')
+    while remember is None:
+        replace = not replace
+        print "Replacement changed to: {}".format("YES" if replace else "NO")
+        remember = yes_no("Remember this choice (Y/n)? [U]ndo?", extra='u')
+    return replace, remember
+
+
 def conf_modify(word):
     print "\nFound word with suffix:", word
     while True:

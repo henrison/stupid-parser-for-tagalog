@@ -60,15 +60,14 @@ morphology = [
     # Linker
     (re.compile(r"(\w{2})ng$"),
         r"\1=na"),
-    # Linker Update
-    (re.compile(r"=na"),
-        r"n=na"),
+    (re.compile(r"(\w{2})ng$"),
+        r"\1n=na"),
     # PV/LV suffix
     (re.compile(r"(\w{3})(in|an)$"),
         r"\1-@\2"),
     # PV Update
-    (re.compile(r"(<in>|na|ma)-([\w-]+)"),
-        r"\1-\2-(in)"),
+    (re.compile(r"^(<in>|na|ma)-([\w-]+)(=|$)"),
+        r"\1-\2-(in)\3"),
 ]
 
 suffix = (re.compile(r'([^-]+)-@([ai]n)'), r"{}-\2")
