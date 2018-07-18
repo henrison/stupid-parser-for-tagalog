@@ -57,9 +57,9 @@ def try_expr(expr, repl, sents, interactive=True):
         for j, word in enumerate(sent):
             if word not in skip_words and expr.search(word):
                 new_word = expr.sub(repl, word)
-                if interactive and word not in repl_words:
-                    # This word hasn't been set to be ignored or replaced yet
-                    replace, remember = conf_replace(sent_msg, word, new_word)
+                if word not in repl_words:
+                    replace, remember = conf_replace(
+                        sent_msg, word, new_word, interactive=interactive)
                     sent_msg = ''
                     if remember:
                         (repl_words if replace else skip_words).append(word)
@@ -85,14 +85,16 @@ def try_suffixes(split_sents, interactive=True):
                 sent[j] = words[word]
 
 
-def conf_replace(curr_sent_msg, word, new_word):
+def conf_replace(curr_sent_msg, word, new_word, interactive=True):
+    if not interactive:
+        return True, True
     print '{}Match found: {} --> {}'.format(curr_sent_msg, word, new_word)
-    replace = yes_no("Replace (Y/n)?")
-    remember = yes_no("Remember this choice (Y/n)? [U]ndo?", extra='u')
+    replace = yes_no_loop("Replace (Y/n)?")
+    remember = yes_no_loop("Remember this choice (Y/n)? [U]ndo?", extra='u')
     while remember is None:
         replace = not replace
         print "Replacement changed to: {}".format("YES" if replace else "NO")
-        remember = yes_no("Remember this choice (Y/n)? [U]ndo?", extra='u')
+        remember = yes_no_loop("Remember this choice (Y/n)? [U]ndo?", extra='u')
     return replace, remember
 
 
@@ -112,7 +114,7 @@ def conf_modify(word):
             return modify, new_word
 
 
-def yes_no(msg, default=True, extra=None):
+def yes_no_loop(msg, default=True, extra=None):
     response = 'no response'
     while response:
         if response in 'nN':
@@ -131,8 +133,8 @@ def can_interrupt(f, sents, fname, infix, interactive=True):
     try:
         f(sents, interactive=interactive)
     except KeyboardInterrupt:
-        if yes_no("\n\nKeyboardInterrupt caught. Output intermediate "
-                  "results to a file (y/N)?", default=False):
+        if yes_no_loop("\n\nKeyboardInterrupt caught. Output intermediate "
+                       "results to a file (y/N)?", default=False):
            write_file(fname, sents, infix)
         exit()
     write_file(fname, sents, infix)
@@ -149,7 +151,7 @@ def parse_args():
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Print debugging messages")
     parser.add_argument("-n", "--non-interactive", action="store_false",
-                        help="Disable yes_noation messages; all matches will "
+                        help="Disable confirmation messages; all matches will "
                         "be automatically replaced; intended for debugging")
     parser.add_argument("-i", "--infix",
                         help="Set an alternative string for delimiting infixes")
