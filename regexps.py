@@ -58,19 +58,19 @@ morphology = [
     (re.compile(r"^kaka(\w)"),
         r"kaRED-\1"),
     # Linker
-    (re.compile(r"(\w{2})ng$"),
-        r"\1=na"),
-    (re.compile(r"(\w{2})ng$"),
-        r"\1n=na"),
+    # (re.compile(r"(\w{2})ng$"),
+    #     r"\1=na"),
+    # (re.compile(r"(\w{2})ng$"),
+    #     r"\1n=na"),
     # PV/LV suffix
-    (re.compile(r"(\w{3})(in|an)$"),
-        r"\1-@\2"),
+    # (re.compile(r"(\w{3})(in|an)$"),
+    #     r"\1-@\2"),
     # PV Update
     (re.compile(r"^(<in>|na|ma)-([\w-]+)(=|$)"),
         r"\1-\2-(in)\3"),
 ]
 
-suffix = re.compile(r'([^-]+)-@')
+suffix = (re.compile(r'([^-]{3,})([ia]n)(=|$)'), r'{}-\2\3')
 
 # Glosses (IN PROGRESS)
 """

@@ -40,7 +40,12 @@ def write_file(fname, sents, infix_paren):
 
 def parse_morphology(sents, interactive=True):
     try_exprs(res.morphology, sents, interactive=interactive)
+    try_linker(sents, interactive=interactive)
     try_suffixes(sents, interactive=interactive)
+
+
+def parse_gloss(sents, interactive=True):
+    try_exprs(res.glosses, sents, interactive=interactive)
 
 
 def try_exprs(exprs, sents, interactive=True):
@@ -70,19 +75,46 @@ def try_expr(expr, repl, sents, interactive=True):
         log.debug("Result: " + ' '.join(sent))
 
 
+def try_linker(sents, interactive=True):
+    saved = {}
+    for sent in sents:
+        for i, word in enumerate(sent):
+            if word.endswith('ng') and len(word) > 3:
+                try:
+                    sent[i] = saved[word]
+                except:
+                    new_word, remember = conf_linker(                       word, interactive=interactive)
+                    if remember:
+                        saved[word] = new_word
+                    sent[i] = new_word
+
+
 def try_suffixes(sents, interactive=True):
-    new = {}
+    saved = {}
+    skip_words = []
+    re_suffix, template = res.suffix
     for sent in sents:
         for j, word in enumerate(sent):
-            match = res.suffix.search(word)
-            if match:
-                root = match.group(1)
-                try:
-                    sent[j] = word.replace(root + '-@', new[root] + '-')
-                except KeyError:
-                    new[root] = conf_modify_root(
-                        word, root, interactive=interactive)
-                    sent[j] = word.replace(root + '-@', new[root] + '-')
+            if word in skip_words:
+                continue
+            match = re_suffix.search(word)
+            if not match:
+                continue
+            root = match.group(1)
+            try:
+                repl = template.format(saved[root])
+                sent[j] = re_suffix.sub(repl, word)
+            except KeyError:
+                new_root, remember = conf_suffix(
+                    word, root, interactive=interactive)
+                if new_root:
+                    repl = template.format(new_root)
+                    sent[j] = re_suffix.sub(repl, word)
+                if remember:
+                    if new_root:
+                        saved[root] = new_root
+                    else:
+                        skip_words.append(root)
 
 
 def conf_replace(curr_sent_msg, word, new_word, interactive=True):
@@ -98,33 +130,64 @@ def conf_replace(curr_sent_msg, word, new_word, interactive=True):
     return replace, remember
 
 
-def conf_modify_root(word, root, interactive=True):
+def conf_linker(word, interactive=True):
     if not interactive:
-        return root
+        return word[:-2] + '=na'
 
-    print "\nFound word with suffix:", word
     while True:
-        new_root = raw_input("Enter replacement for all instances of " + root +
-                             ", or enter nothing to keep as is:").lower()
-        if not new_root:
-            new_root = root
-        new_word = word.replace(root + '-@', new_root + '-')
-        if yes_no_loop(
-                "Confirm change: {} --> {} (Y/n)?".format(word, new_word)):
-            return new_root
+        if not yes_no_loop("\nParse linker for: {} (Y/n)?".format(word)):
+            new_word = word
+        elif yes_no_loop("Stem ends in 'n' (y/N)?", default=False):
+            new_word = word[:-1] + '=na'
+        else:
+            new_word = word[:-2] + '=na'
+
+        remember = yes_no_loop(
+            "Remember: {} --> {} (Y/n)? [U]ndo?".format(word, new_word),
+            extra='u')
+        if remember is None:
+            continue
+        return new_word, remember
+
+
+def conf_suffix(word, root, interactive=True):
+    if not interactive:
+        return root, True
+
+    while True:
+        if not yes_no_loop(
+            "\nParse suffix for: {} with root {} (Y/n)?".format(word, root)):
+            new_root = None
+        else:
+            new_root = raw_input(
+                "Enter replacement for all instances of " + root +
+                ", or enter nothing to keep as is: ").lower()
+            if not new_root:
+                new_root = root
+
+        if new_root:
+            repl = res.suffix[1].format(new_root)
+            msg = "Remember change: {} --> {} (Y/n)? [U]ndo?".format(
+                word, res.suffix[0].sub(repl, word))
+        else:
+            msg = "Remember no change (Y/n)? [U]ndo?"
+        remember = yes_no_loop(msg, extra='u')
+        if remember is None:
+            continue
+        return new_root, remember
 
 
 def yes_no_loop(msg, default=True, extra=None):
     response = 'no response'
     while response:
-        if response in 'nN':
+        if response == 'n':
             return False
-        elif response in 'yY':
+        elif response == 'y':
             return True
-        elif extra and response.lower() in extra:
+        elif extra and response in extra:
             return None
         else:
-            response = raw_input(msg + ' ')
+            response = raw_input(msg + ' ').lower()
     else:
         return default
 
