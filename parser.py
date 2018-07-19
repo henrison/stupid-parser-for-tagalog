@@ -1,7 +1,6 @@
 #!/usr/bin/python
 """
 Main script file
-Currently not functional
 """
 import re
 import regexps as res
