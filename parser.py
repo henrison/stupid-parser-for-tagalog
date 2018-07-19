@@ -9,14 +9,16 @@ import argparse
 import logging
 logging.basicConfig()
 
-def read_file(fname):
+def read_file(fname, infix_paren):
     print "Opening file:", fname
     sents = []
     with open(fname, "r") as f:
         punct = re.compile(r"[.,:;?!]")
+        infix = re.compile(r"(?<!<){0}(um|in){0}(?!>)".format(infix_paren))
         for line in f:
             line = line.strip()
             line = punct.sub("", line)
+            line = infix.sub(r"<\1>", line)
             if not line:
                 continue
             line = line[0].lower() + line[1:]
@@ -217,7 +219,8 @@ def parse_args():
                         help="Disable confirmation messages; all matches will "
                         "be automatically replaced; intended for debugging")
     parser.add_argument("-i", "--infix",
-                        help="Set an alternative string for delimiting infixes")
+                        help="Set an alternative string for delimiting infixes"
+                        ", applies to input file and output file")
     parser.add_argument("file",
                         help="File to parse; must be plain text, ideally with "
                         "one line corresponding to one sentence")
@@ -228,8 +231,9 @@ def main():
     if args.verbose:
         log.setLevel(logging.DEBUG)
 
+    log.debug("ARGS: " + str(args))
     fname = args.file
-    sents = read_file(fname)
+    sents = read_file(fname, args.infix)
     log.debug('SENTENCES:\n  ' + '\n  '.join(sents))
     sents = [sent.split() for sent in sents]
 
