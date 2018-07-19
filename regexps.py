@@ -17,8 +17,8 @@ morphology = [
     (re.compile(r"(\w?)(um|in)([aeiou])\1\3"),
         r"<\2>-RED-\1\3"),
     # Infixation
-    (re.compile(r"(\b|i)([^aeiou]?)(um|in)([aeiou]\w)"),
-        r"\1<\3>-\2\4"),
+    (re.compile(r"(\b|i)([^aeiou-]?)(?<!-)(um|in)(?=[aeiou]\w)"),
+        r"\1<\3>-\2"),
     # Mag/Pag + RED
     (re.compile(r"\b([mpn]ag)(\w{2})\2"),
         r"\1-RED-\2"),
@@ -42,36 +42,25 @@ morphology = [
     (re.compile(r"\b([^aeiou]?[aeiou])\1"),
         r"RED-\1"),
     # M-initial Prefixes
-    (re.compile(r"^(maka|naka|nakaka|makaka|napaka)(\w{2})"),
-        r"\1-\2"),
-    (re.compile(r"^(ma|na)(\w{2})"),
-        r"\1-\2"),
+    (re.compile(r"^(maka|naka|nakaka|makaka|napaka)(?=\w{2})"),
+        r"\1-"),
+    (re.compile(r"^(ma|na)(?=\w{2})"),
+        r"\1-"),
     # i- morpheme
-    (re.compile(r"(^|-)i"),
+    (re.compile(r"(^|-)i(?!-)(?=\w{2})"),
         r"\1i-"),
     # ka- comitative
-    (re.compile(r"^ka(\w{3})"),
-        r"ka-\1"),
+    (re.compile(r"^ka(?=\w{3})"),
+        r"ka-"),
     # Recent Perfective
-    (re.compile(r"^ka(\w{2})\1(\w)"),
-        r"kaRED-\1\2"),
-    (re.compile(r"^kaka(\w)"),
-        r"kaRED-\1"),
-    # Linker
-    (re.compile(r"(\w{2})ng$"),
-        r"\1=na"),
-    # Linker Update
-    (re.compile(r"=na"),
-        r"n=na"),
-    # PV/LV suffix
-    (re.compile(r"(\w{3})(in|an)$"),
-        r"\1-@\2"),
-    # PV Update
-    (re.compile(r"(<in>|na|ma)-([\w-]+)"),
-        r"\1-\2-(in)"),
+    (re.compile(r"^ka(\w{2})\1(?=\w)"),
+        r"kaRED-"),
+    (re.compile(r"^kaka(?=\w)"),
+        r"kaRED-"),
 ]
-
-suffix = (re.compile(r'([^-]+)-@([ai]n)'), r"{}-\2")
+null_pv = [
+    (re.compile(r"^(<in>|na|ma)-([\w-]+)(?<!-[ai]n)(=|$)"), r"\1-\2-(in)\3")]
+suffix = (re.compile(r'([^-]{3,})([ia]n)(=|$)'), r'{}-\2\3')
 
 # Glosses (IN PROGRESS)
 _standalone_re = r"^{}$"
