@@ -44,6 +44,7 @@ def parse_morphology(sents, interactive=True):
     try_exprs(res.morphology, sents, interactive=interactive)
     try_linker(sents, interactive=interactive)
     try_suffixes(sents, interactive=interactive)
+    try_exprs(res.null_pv, sents, interactive=interactive)
 
 
 def parse_gloss(sents, interactive=True):
@@ -116,7 +117,7 @@ def try_suffixes(sents, interactive=True):
                     if new_root:
                         saved[root] = new_root
                     else:
-                        skip_words.append(root)
+                        skip_words.append(word)
 
 
 def conf_replace(curr_sent_msg, word, new_word, interactive=True):
