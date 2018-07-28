@@ -36,27 +36,27 @@ morphology = [
     (re.compile(r"\b([mpn]a)(ng?|m)([^aeiou])"),
         r"\1N-\3"),
     # M-initial with RED
-    (re.compile(r"^(ma|na|maka|naka)(\w{1,2})\2"),
+    (re.compile(r"^(ma|na|maka|naka)([^aeiou]?[aeiou])\2"),
         r"\1-RED-\2"),
-    # Reduplication only
-    (re.compile(r"\b([^aeiou]?[aeiou])\1"),
-        r"RED-\1"),
     # M-initial Prefixes
     (re.compile(r"^(maka|naka|nakaka|makaka|napaka)(?=\w{2})"),
         r"\1-"),
     (re.compile(r"^(ma|na)(?=\w{2})"),
         r"\1-"),
     # i- morpheme
-    (re.compile(r"(^|-)i(?!-)(?=\w{2})"),
+    (re.compile(r"(^|-)i(?=[^-]{2})"),
         r"\1i-"),
-    # ka- comitative
-    (re.compile(r"^ka(?=\w{3})"),
-        r"ka-"),
     # Recent Perfective
     (re.compile(r"^ka(\w{2})\1(?=\w)"),
-        r"kaRED-"),
+        r"kaRED-\1"),
     (re.compile(r"^kaka(?=\w)"),
         r"kaRED-"),
+    # Reduplication only
+    (re.compile(r"\b([^aeiou]?[aeiou])\1"),
+        r"RED-\1"),
+    # ka- comitative
+    (re.compile(r"(^|-)ka(?=[a-z]{3})"),
+        r"\1ka-"),
 ]
 null_pv = [
     (re.compile(r"^(<in>|na|ma)-([\w-]+)(?<!-[ai]n)(=|$)"), r"\1-\2-(in)\3")]
