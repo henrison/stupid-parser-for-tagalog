@@ -94,6 +94,7 @@ _glosses = [
     (r"atin", _with_linker_re, r"1pl.Incl.Obl"),
     (r"inyo", _with_linker_re, r"2pl.Obl"),
     (r"kanila", _with_linker_re, r"3pl.Obl"),
+    (r"kita", _with_linker_re, r"1sg.Gen>2sg.Nom"),
     # Demonstratives
     (r"ito", _with_linker_re, r"Prox"),
     (r"i?yan", _with_linker_re, r"Med"),
