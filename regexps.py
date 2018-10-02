@@ -2,8 +2,12 @@
 Regular expressions go here
 """
 import re
+import itertools
 # Morpheme-parsing regexps
-morphology = [
+
+_start = [
+    (re.compile(r"^(napaka|pinaka)(?=\w{3})"),
+        r"\1-"),
     # ni allomorph of <in>, with/without RED, with/without i-
     (re.compile(r"^ni([ly][aeiou])\1"),
         r"<in>-RED-\1"),
@@ -17,8 +21,20 @@ morphology = [
     (re.compile(r"(\w?)(um|in)([aeiou])\1\3"),
         r"<\2>-RED-\1\3"),
     # Infixation
-    (re.compile(r"(\b|i)([^aeiou-]?)(?<!-)(um|in)(?=[aeiou]\w)"),
+    (re.compile(r"(\bi?)([^aeiou-]?)(?<!-)(um|in)(?=[aeiou]\w)"),
         r"\1<\3>-\2"),
+]
+_maN = [
+    # MaN/PaN/NaN + RED
+    (re.compile(r"\b([mpn]a)(ng|n|m)(\w{2})\3"),
+        r"\1N-RED-\3"),
+    (re.compile(r"\b([mpn]a)(ng)-([aeiou])\3"),
+        r"\1N-RED-\3"),
+    # MaN/PaN/NaN
+    (re.compile(r"\b([mpn]a)(ng|n|m)([^aeiou])"),
+        r"\1N-\3"),
+]
+_mag = [
     # Mag/Pag + RED
     (re.compile(r"\b([mpn]ag)(\w{2})\2"),
         r"\1-RED-\2"),
@@ -27,29 +43,30 @@ morphology = [
     # Mag/Pag (Vowel-initial stems don't need changing)
     (re.compile(r"\b([mpn]ag)([^aeiou-])"),
         r"\1-\2"),
-    # MaN/PaN/NaN + RED
-    (re.compile(r"\b([mpn]a)(ng?|m)(\w{2})\3"),
-        r"\1N-RED-\3"),
-    (re.compile(r"\b([mpn]a)(ng)-([aeiou])\3"),
-        r"\1N-RED-\3"),
-    # MaN/PaN/NaN
-    (re.compile(r"\b([mpn]a)(ng?|m)([^aeiou])"),
-        r"\1N-\3"),
+]
+_ma = [
     # M-initial with RED
-    (re.compile(r"^(ma|na|maka|naka)([^aeiou]?[aeiou])\2"),
+    # (re.compile(r"^(maka|naka)ka(?=\w{3})"),
+    (re.compile(r"^([pmn])ak([ai])k\2(?=\w{3})"),
+        r"\1ak\2-RED-"),
+    (re.compile(r"^(maka|naka)([^aeiou]?[aeiou])\2"),
+        r"\1-RED-\2"),
+    (re.compile(r"^([pmn]a)([^aeiou]?[aeiou])\2"),
         r"\1-RED-\2"),
     # M-initial Prefixes
-    (re.compile(r"^(maka|naka|nakaka|makaka|napaka)(?=\w{2})"),
+    (re.compile(r"^([pmn])ak([ai])(?=\w{3})"),
+        r"\1ak\2-"),
+    (re.compile(r"^([pmn]a)(?=\w{3})"),
         r"\1-"),
-    (re.compile(r"^(ma|na)(?=\w{2})"),
-        r"\1-"),
+]
+_end = [
     # i- morpheme
     (re.compile(r"(^|-)i(?=[^-]{2})"),
         r"\1i-"),
     # Recent Perfective
     (re.compile(r"^ka(\w{2})\1(?=\w)"),
         r"kaRED-\1"),
-    (re.compile(r"^kaka(?=\w)"),
+    (re.compile(r"^kaka(?=\w{3})"),
         r"kaRED-"),
     # Reduplication only
     (re.compile(r"\b([^aeiou]?[aeiou])\1"),
@@ -58,6 +75,16 @@ morphology = [
     (re.compile(r"(^|-)ka(?=[a-z]{3})"),
         r"\1ka-"),
 ]
+
+morphology = itertools.chain(
+    _start,
+    _mag,
+    _maN,
+    _ma,
+    _mag,
+    _maN,
+    _end
+)
 null_pv = [
     (re.compile(r"^(<in>|na|ma)-([\w-]+)(?<!-[ai]n)(=|$)"), r"\1-\2-(in)\3")]
 suffix = (re.compile(r'([^-]{3,})([ia]n)(=|$)'), r'{}-\2\3')

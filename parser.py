@@ -63,7 +63,7 @@ def try_expr(expr, repl, sents, interactive=True):
         sent_msg = '\nCurrent Sentence: {}\n'.format(' '.join(sent))
         for j, word in enumerate(sent):
             if word not in skip_words and expr.search(word):
-                new_word = expr.sub(repl, word)
+                new_word = expr.sub(repl, word, count=1)
                 if word not in repl_words:
                     replace, remember = conf_replace(
                         sent_msg, word, new_word, interactive=interactive)
