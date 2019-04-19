@@ -61,7 +61,7 @@ _ma = [
 ]
 _end = [
     # i- morpheme
-    (re.compile(r"(^|-)i(?=[^-]{2})"),
+    (re.compile(r"(^|-)i(?=[^-]{4})"),
         r"\1i-"),
     # Recent Perfective
     (re.compile(r"^ka(\w{2})\1(?=\w)"),

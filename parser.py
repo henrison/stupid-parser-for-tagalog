@@ -8,6 +8,8 @@ import argparse
 import logging
 logging.basicConfig()
 
+__sent_msg = '\nCurrent Sentence: {}\n'
+
 def read_file(fname, infix_paren):
     print "Opening file:", fname
     sents = []
@@ -40,8 +42,8 @@ def write_file(fname, sents, infix_paren):
 
 
 def parse_morphology(sents, interactive=True):
-    try_exprs(res.morphology, sents, interactive=interactive)
     try_linker(sents, interactive=interactive)
+    try_exprs(res.morphology, sents, interactive=interactive)
     try_suffixes(sents, interactive=interactive)
     try_exprs(res.null_pv, sents, interactive=interactive)
 
@@ -80,12 +82,16 @@ def try_expr(expr, repl, sents, interactive=True):
 def try_linker(sents, interactive=True):
     saved = {}
     for sent in sents:
+        sent_msg = '\nCurrent Sentence: {}'.format(' '.join(sent))
         for i, word in enumerate(sent):
-            if word.endswith('ng') and len(word) > 3:
+            if (word.endswith('ng') and len(word) > 3 and
+                    word not in ['kung', 'lang']):
                 try:
                     sent[i] = saved[word]
                 except:
-                    new_word, remember = conf_linker(                       word, interactive=interactive)
+                    new_word, remember = conf_linker(
+                        sent_msg, word, interactive=interactive)
+                    sent_msg = ''
                     if remember:
                         saved[word] = new_word
                     sent[i] = new_word
@@ -132,10 +138,11 @@ def conf_replace(curr_sent_msg, word, new_word, interactive=True):
     return replace, remember
 
 
-def conf_linker(word, interactive=True):
+def conf_linker(curr_sent_msg, word, interactive=True):
     if not interactive:
         return word[:-2] + '=na'
 
+    print curr_sent_msg
     while True:
         if not yes_no_loop("\nParse linker for: {} (Y/n)?".format(word)):
             new_word = word
