@@ -6,9 +6,11 @@ import re
 import regexps as res
 import argparse
 import logging
+import getch
 logging.basicConfig()
 
 __sent_msg = '\nCurrent Sentence: {}\n'
+__infix_default = '`'
 
 def read_file(fname, infix_paren):
     print "Opening file:", fname
@@ -22,7 +24,8 @@ def read_file(fname, infix_paren):
             line = infix.sub(r"<\1>", line)
             if not line:
                 continue
-            line = line[0].lower() + line[1:]
+            i_split = 4 if line[:2] == "A:" else 1
+            line = line[:i_split].lower() + line[i_split:]
             sents.append(line)
     if not sents:
         print "No sentences found. Exiting..."
@@ -189,14 +192,18 @@ def conf_suffix(word, root, interactive=True):
 def yes_no_loop(msg, default=True, extra=None):
     response = 'no response'
     while response:
-        if response == 'n':
+        if response == '\x03': # ^C
+            raise KeyboardInterrupt()
+        elif response == 'n':
             return False
         elif response == 'y':
             return True
         elif extra and response in extra:
             return None
         else:
-            response = raw_input(msg + ' ').lower()
+            print msg,
+            response = getch.getch().lower().strip()
+            log.debug("Response: " + repr(response))
     else:
         return default
 
@@ -225,9 +232,10 @@ def parse_args():
     parser.add_argument("-n", "--non-interactive", action="store_false",
                         help="Disable confirmation messages; all matches will "
                         "be automatically replaced; intended for debugging")
-    parser.add_argument("-i", "--infix",
+    parser.add_argument("-i", "--infix", default=__infix_default,
                         help="Set an alternative string for delimiting infixes"
-                        ", applies to input file and output file")
+                        ", applies to input file and output file. Pass empty"
+                        "string to set to angle brackets")
     parser.add_argument("file",
                         help="File to parse; must be plain text, ideally with "
                         "one line corresponding to one sentence")
@@ -238,6 +246,8 @@ def main():
     if args.verbose:
         log.setLevel(logging.DEBUG)
 
+    if args.infix == "":
+        args.infix = None
     log.debug("ARGS: " + str(args))
     fname = args.file
     sents = read_file(fname, args.infix)
