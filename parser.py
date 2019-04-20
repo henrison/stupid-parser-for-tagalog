@@ -24,7 +24,7 @@ def read_file(fname, infix_paren):
             line = infix.sub(r"<\1>", line)
             if not line:
                 continue
-            i_split = 4 if line[:2] == "A:" else 1
+            i_split = 3 if line[:2] == "A " else 1
             line = line[:i_split].lower() + line[i_split:]
             sents.append(line)
     if not sents:
@@ -203,7 +203,7 @@ def yes_no_loop(msg, default=True, extra=None):
         else:
             print msg,
             response = getch.getch().lower().strip()
-            log.debug("Response: " + repr(response))
+            print response
     else:
         return default
 
